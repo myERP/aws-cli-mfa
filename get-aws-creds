@@ -22,7 +22,8 @@ set the variables to the normal keys.
 fi
 
 identity=$(aws sts get-caller-identity)
-username=$(echo -- "$identity" | sed -n 's!.*"arn:aws:iam::.*:user/\(.*\)".*!\1!p')
+full_username=$(echo -- "$identity" | sed -n 's!.*"arn:aws:iam::.*:user/\(.*\)".*!\1!p')
+username=${full_username##*/}
 if [ -z "$username" ]
 then
   echo "Can not identify who you are.  Looking for a line like
@@ -68,9 +69,9 @@ $tokens" >&2
   exit 255
 fi
 
-echo export AWS_PROFILE=$AWS_PROFILE
-echo export AWS_SESSION_TOKEN=$session
-echo export AWS_SECRET_ACCESS_KEY=$secret
-echo export AWS_ACCESS_KEY_ID=$access
+aws configure --profile $AWS_PROFILE-mfa set aws_access_key_id $access
+aws configure --profile $AWS_PROFILE-mfa set aws_secret_access_key $secret
+aws configure --profile $AWS_PROFILE-mfa set aws_session_token $session
+
 
 echo Keys valid until $expire >&2
